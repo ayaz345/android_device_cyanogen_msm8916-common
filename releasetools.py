@@ -43,7 +43,7 @@ def GetRadioFiles(z):
   out = {}
   for info in z.infolist():
     if info.filename.startswith("RADIO/") and (info.filename.__len__() > len("RADIO/")):
-      fn = "RADIO/" + info.filename[6:]
+      fn = f"RADIO/{info.filename[6:]}"
       out[fn] = fn
   return out
 
@@ -116,11 +116,12 @@ def AddBasebandAssertion(info):
   if filesmap != {}:
     return
   android_info = info.input_zip.read("OTA/android-info.txt")
-  m = re.search(r'require\s+version-baseband\s*=\s*(\S+)', android_info)
-  if m:
-    versions = m.group(1).split('|')
+  if m := re.search(r'require\s+version-baseband\s*=\s*(\S+)', android_info):
+    versions = m[1].split('|')
     if len(versions) and '*' not in versions:
-      cmd = 'assert(cm.verify_baseband(' + ','.join(['"%s"' % baseband for baseband in versions]) + ') == "1");'
+      cmd = ('assert(cm.verify_baseband(' +
+             ','.join([f'"{baseband}"'
+                       for baseband in versions]) + ') == "1");')
       info.script.AppendExtra(cmd)
   return
 
@@ -130,10 +131,10 @@ def AddTrustZoneAssertion(info):
   if filesmap != {}:
     return
   android_info = info.input_zip.read("OTA/android-info.txt")
-  m = re.search(r'require\s+version-trustzone\s*=\s*(\S+)', android_info)
-  if m:
-    versions = m.group(1).split('|')
+  if m := re.search(r'require\s+version-trustzone\s*=\s*(\S+)', android_info):
+    versions = m[1].split('|')
     if len(versions) and '*' not in versions:
-      cmd = 'assert(cm.verify_trustzone(' + ','.join(['"%s"' % tz for tz in versions]) + ') == "1");'
+      cmd = ('assert(cm.verify_trustzone(' +
+             ','.join([f'"{tz}"' for tz in versions]) + ') == "1");')
       info.script.AppendExtra(cmd)
   return
